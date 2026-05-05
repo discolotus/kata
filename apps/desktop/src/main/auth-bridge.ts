@@ -85,6 +85,20 @@ const PROVIDER_VALIDATION_CONFIG: Partial<Record<AuthProvider, ValidationConfig>
     invalidStatusCodes: new Set([401, 403]),
     invalidMessage: 'Invalid Mistral API key',
   },
+  linear: {
+    url: () => 'https://api.linear.app/graphql',
+    init: (key) => ({
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: key,
+      },
+      body: JSON.stringify({ query: '{ viewer { id } }' }),
+    }),
+    validStatusCodes: new Set([200]),
+    invalidStatusCodes: new Set([401, 403]),
+    invalidMessage: 'Invalid Linear API key',
+  },
 }
 
 const UNSUPPORTED_PROVIDER_MESSAGES: Partial<Record<AuthProvider, string>> = {
