@@ -14,7 +14,7 @@ use serde_json::Value;
 use tokio::sync::{Mutex, OnceCell};
 use tracing::{error, info, warn};
 
-use crate::domain::{BlockerRef, Issue, TrackerConfig};
+use crate::domain::{BlockerRef, Issue, SubIssue, TrackerConfig};
 use crate::error::{Result, SymphonyError};
 
 // ── Constants ──────────────────────────────────────────────────────────
@@ -64,10 +64,34 @@ query SymphonyLinearPoll($projectSlug: String!, $stateNames: [String!]!, $first:
           }
         }
       }
-      children {
+      children(first: 50) {
         nodes {
           id
           identifier
+          title
+          description
+          state { name }
+          url
+          children(first: 50) {
+            nodes {
+              id
+              identifier
+              title
+              description
+              state { name }
+              url
+              children(first: 50) {
+                nodes {
+                  id
+                  identifier
+                  title
+                  description
+                  state { name }
+                  url
+                }
+              }
+            }
+          }
         }
       }
       parent {
@@ -118,10 +142,34 @@ query SymphonyLinearIssuesById($ids: [ID!]!, $first: Int!, $relationFirst: Int!)
           }
         }
       }
-      children {
+      children(first: 50) {
         nodes {
           id
           identifier
+          title
+          description
+          state { name }
+          url
+          children(first: 50) {
+            nodes {
+              id
+              identifier
+              title
+              description
+              state { name }
+              url
+              children(first: 50) {
+                nodes {
+                  id
+                  identifier
+                  title
+                  description
+                  state { name }
+                  url
+                }
+              }
+            }
+          }
         }
       }
       parent {
@@ -835,13 +883,18 @@ pub fn normalize_issue(raw: &Value, assignee_filter: Option<&AssigneeFilter>) ->
     let created_at = parse_datetime(obj.get("createdAt"));
     let updated_at = parse_datetime(obj.get("updatedAt"));
 
-    // Extract children count and parent identifier for slice/task detection
-    let children_count = obj
+    // Extract children and parent identifier for slice/task detection
+    let child_nodes = obj
         .get("children")
         .and_then(|c| c.get("nodes"))
         .and_then(|n| n.as_array())
-        .map(|a| a.len() as u32)
-        .unwrap_or(0);
+        .map(|a| a.as_slice())
+        .unwrap_or(&[]);
+    let children: Vec<SubIssue> = child_nodes
+        .iter()
+        .filter_map(normalize_sub_issue)
+        .collect();
+    let children_count = children.len() as u32;
     let parent_identifier = obj
         .get("parent")
         .and_then(|p| p.get("identifier"))
@@ -865,7 +918,25 @@ pub fn normalize_issue(raw: &Value, assignee_filter: Option<&AssigneeFilter>) ->
         updated_at,
         children_count,
         parent_identifier,
+        children,
     })
+}
+
+fn normalize_sub_issue(raw: &Value) -> Option<SubIssue> {
+    let obj = raw.as_object()?;
+    let id = obj.get("id")?.as_str()?.to_string();
+    let identifier = obj.get("identifier").and_then(|v| v.as_str()).unwrap_or("").to_string();
+    let title = obj.get("title").and_then(|v| v.as_str()).unwrap_or("").to_string();
+    let description = obj.get("description").and_then(|v| v.as_str()).map(String::from);
+    let state = obj.get("state").and_then(|s| s.get("name")).and_then(|n| n.as_str()).unwrap_or("").to_string();
+    let url = obj.get("url").and_then(|v| v.as_str()).map(String::from);
+    let children = obj
+        .get("children")
+        .and_then(|c| c.get("nodes"))
+        .and_then(|n| n.as_array())
+        .map(|nodes| nodes.iter().filter_map(normalize_sub_issue).collect())
+        .unwrap_or_default();
+    Some(SubIssue { id, identifier, title, description, state, url, children })
 }
 
 /// Parse a priority value: integer stays, anything else → None.

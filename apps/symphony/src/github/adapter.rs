@@ -195,6 +195,7 @@ impl GithubAdapter {
             updated_at: gh.updated_at,
             children_count,
             parent_identifier,
+            children: vec![],
         }
     }
 

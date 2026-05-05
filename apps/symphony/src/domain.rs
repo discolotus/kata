@@ -6,6 +6,22 @@ use std::ops::Deref;
 
 // ── Issue (spec §4.1.1) ────────────────────────────────────────────────
 
+/// A sub-issue (child) of an Issue, supporting arbitrary nesting depth.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SubIssue {
+    pub id: String,
+    pub identifier: String,
+    pub title: String,
+    #[serde(default)]
+    pub description: Option<String>,
+    pub state: String,
+    #[serde(default)]
+    pub url: Option<String>,
+    /// Nested sub-issues (grandchildren, etc.)
+    #[serde(default)]
+    pub children: Vec<SubIssue>,
+}
+
 /// Normalized issue record from the tracker.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Issue {
@@ -40,6 +56,9 @@ pub struct Issue {
     /// Parent issue identifier (e.g. "KAT-928") if this is a sub-issue.
     #[serde(default)]
     pub parent_identifier: Option<String>,
+    /// Direct child sub-issues with full details, nested recursively.
+    #[serde(default)]
+    pub children: Vec<SubIssue>,
 }
 
 fn default_true() -> bool {
