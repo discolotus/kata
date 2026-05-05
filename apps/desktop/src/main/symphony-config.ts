@@ -98,6 +98,42 @@ export async function resolveSymphonyLaunch(
   }
 }
 
+const DEFAULT_SYMPHONY_URL = 'http://localhost:8080'
+
+/**
+ * Ensures symphony.url exists in .kata/preferences.md, creating the file with
+ * defaults if it is missing. Returns the URL that was written or already present.
+ */
+export async function ensureSymphonyUrlInPreferences(workspacePath: string): Promise<string> {
+  const kataDir = path.join(workspacePath, '.kata')
+  const preferencesPath = path.join(kataDir, 'preferences.md')
+
+  let existing: string | null = null
+  try {
+    existing = await fs.readFile(preferencesPath, 'utf8')
+  } catch (error) {
+    const code = typeof error === 'object' && error !== null && 'code' in error
+      ? String((error as { code?: unknown }).code)
+      : undefined
+    if (code !== 'ENOENT') throw error
+  }
+
+  // Already has a symphony.url — extract and return it
+  if (existing) {
+    const prefs = await loadWorkspacePreferences(workspacePath)
+    const url = prefs?.symphony?.url?.trim()
+    if (url) return url
+  }
+
+  // Write default preferences (create or append symphony block)
+  await fs.mkdir(kataDir, { recursive: true })
+  const content = existing?.trim()
+    ? `${existing.trimEnd()}\nsymphony:\n  url: ${DEFAULT_SYMPHONY_URL}\n`
+    : `---\nversion: 1\nsymphony:\n  url: ${DEFAULT_SYMPHONY_URL}\n---\n\n# Kata Preferences\n`
+  await fs.writeFile(preferencesPath, content, 'utf8')
+  return DEFAULT_SYMPHONY_URL
+}
+
 export async function loadWorkspacePreferences(workspacePath: string): Promise<SymphonyPreferences | null> {
   const preferencesPath = path.join(workspacePath, '.kata', 'preferences.md')
 

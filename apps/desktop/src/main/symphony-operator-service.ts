@@ -122,6 +122,11 @@ export class SymphonyOperatorService extends EventEmitter {
     }
   }
 
+  public async applyConfiguredUrl(url: string): Promise<SymphonyOperatorSnapshot> {
+    this.activeUrl = url
+    return this.refreshBaseline({ advanceMockScenario: false })
+  }
+
   public async refreshBaseline(options: { advanceMockScenario?: boolean } = {}): Promise<SymphonyOperatorSnapshot> {
     const url = this.activeUrl ?? this.runtimeStatus?.url
     if (!url) {

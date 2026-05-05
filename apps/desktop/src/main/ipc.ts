@@ -14,6 +14,7 @@ import { AuthBridge } from './auth-bridge'
 import { LinearDocumentClient } from './linear-document-client'
 import { GithubPlanningClient, GithubPlanningClientError } from './github-planning-client'
 import { readWorkspaceWorkflowTrackerConfig } from './workflow-config-reader'
+import { ensureSymphonyUrlInPreferences } from './symphony-config'
 import { PiAgentBridge } from './pi-agent-bridge'
 import { PlanningToolDetector } from './planning-tool-detector'
 import { RpcEventAdapter } from './rpc-event-adapter'
@@ -224,6 +225,29 @@ export function registerSessionIpc({
               outcome: 'succeeded' as const,
               code: 'SYMPHONY_DASHBOARD_REFRESHED',
               message: 'Symphony operator snapshot refreshed.',
+            }
+          }
+
+          if (action === 'fix_config' && symphonyOperatorService) {
+            try {
+              const workspacePath = bridge.getWorkspacePath()
+              const url = await ensureSymphonyUrlInPreferences(workspacePath)
+              const snapshot = await symphonyOperatorService.applyConfiguredUrl(url)
+              syncStabilityMetricsFromServices()
+              reliabilityAggregator.ingestSymphonyOperatorSnapshot(snapshot)
+              return {
+                success: true,
+                outcome: 'succeeded' as const,
+                code: 'SYMPHONY_CONFIG_APPLIED',
+                message: `Symphony URL configured: ${url}`,
+              }
+            } catch (error) {
+              return {
+                success: false,
+                outcome: 'failed' as const,
+                code: 'SYMPHONY_CONFIG_WRITE_FAILED',
+                message: error instanceof Error ? error.message : 'Failed to write Symphony config.',
+              }
             }
           }
 
