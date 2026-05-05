@@ -81,6 +81,7 @@ function createProviderStatuses(statusByProvider: Partial<Record<string, 'valid'
     bedrock: { provider: 'bedrock' as const, status: statusByProvider.bedrock ?? 'missing', authType: 'api_key' as const },
     azure: { provider: 'azure' as const, status: statusByProvider.azure ?? 'missing', authType: 'api_key' as const },
     'github-copilot': { provider: 'github-copilot' as const, status: statusByProvider['github-copilot'] ?? 'missing', authType: 'oauth' as const },
+    linear: { provider: 'linear' as const, status: statusByProvider.linear ?? 'missing', authType: 'api_key' as const },
   }
 }
 

@@ -50,6 +50,12 @@ export const PROVIDER_METADATA: Record<AuthProvider, ProviderMetadata> = {
     shortName: 'Copilot',
     description: 'Authenticated via GitHub Copilot CLI session',
   },
+  linear: {
+    id: 'linear',
+    name: 'Linear',
+    shortName: 'Linear',
+    description: 'Linear API key for workflow board and issue tracking',
+  },
 }
 
 export const ONBOARDING_PROVIDER_IDS: AuthProvider[] = [

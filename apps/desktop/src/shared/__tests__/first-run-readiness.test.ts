@@ -11,6 +11,7 @@ function createProviders(overrides: Partial<ProviderStatusMap> = {}): ProviderSt
     bedrock: { provider: 'bedrock', status: 'missing', authType: 'api_key' },
     azure: { provider: 'azure', status: 'missing', authType: 'api_key' },
     'github-copilot': { provider: 'github-copilot', status: 'missing', authType: 'oauth' },
+    linear: { provider: 'linear', status: 'missing', authType: 'api_key' },
     ...overrides,
   }
 }

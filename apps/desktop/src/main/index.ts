@@ -322,15 +322,20 @@ app.whenReady().then(async () => {
   const workspacePath = await resolveInitialWorkspacePath()
 
   bridge = new PiAgentBridge(workspacePath, 'pi', 30_000)
+  const authBridge = new AuthBridge(undefined, PI_AUTH_PATH)
   symphonySupervisor = new SymphonySupervisor({
     workspacePath,
     appIsPackaged: app.isPackaged,
     resourcesPath: process.resourcesPath,
+    resolveExtraEnv: async () => {
+      const extras: Record<string, string> = {}
+      const linearKey = await authBridge.getApiKey('linear')
+      if (linearKey) extras.LINEAR_API_KEY = linearKey
+      return extras
+    },
   })
   symphonyOperatorService = new SymphonyOperatorService({ env: process.env })
   agentActivityJournal = new AgentActivityJournal()
-
-  const authBridge = new AuthBridge(undefined, PI_AUTH_PATH)
   const sessionManager = new DesktopSessionManager()
   mainWindow = createWindow()
 

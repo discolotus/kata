@@ -58,6 +58,7 @@ describe('SettingsPanel', () => {
           bedrock: { provider: 'bedrock', status: 'missing', configured: false, requiresKey: true },
           azure: { provider: 'azure', status: 'missing', configured: false, requiresKey: true },
           'github-copilot': { provider: 'github-copilot', status: 'missing', configured: false, requiresKey: false },
+          linear: { provider: 'linear', status: 'missing', configured: false, requiresKey: true },
         },
         checkpoints: {
           auth: { checkpoint: 'auth', status: 'pass' },

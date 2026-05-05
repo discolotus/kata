@@ -98,6 +98,7 @@ export const ALL_AUTH_PROVIDERS = [
   'bedrock',
   'azure',
   'github-copilot',
+  'linear',
 ] as const
 
 export type AuthProvider = (typeof ALL_AUTH_PROVIDERS)[number]

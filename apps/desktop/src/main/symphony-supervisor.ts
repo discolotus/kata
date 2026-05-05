@@ -24,6 +24,8 @@ export interface SymphonySupervisorOptions {
   appIsPackaged: boolean
   resourcesPath?: string
   env?: NodeJS.ProcessEnv
+  /** Called at spawn time to inject additional env vars (e.g. secrets from auth.json). */
+  resolveExtraEnv?: () => Promise<Record<string, string>>
   fetchImpl?: typeof fetch
   spawnImpl?: typeof spawn
   readinessTimeoutMs?: number
@@ -182,9 +184,11 @@ export class SymphonySupervisor extends EventEmitter {
     })
 
     try {
+      const baseEnv = this.options.env ?? process.env
+      const extraEnv = this.options.resolveExtraEnv ? await this.options.resolveExtraEnv() : {}
       const child = this.spawnImpl(launch.command, launch.args, {
         cwd: launch.cwd,
-        env: this.options.env ?? process.env,
+        env: { ...baseEnv, ...extraEnv },
         stdio: 'pipe',
       })
 

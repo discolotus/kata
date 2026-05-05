@@ -1305,6 +1305,7 @@ rl.on('line', (line) => {
       bedrock: { provider: 'bedrock', status: 'missing' as const, authType: 'api_key' as const },
       azure: { provider: 'azure', status: 'missing' as const, authType: 'api_key' as const },
       'github-copilot': { provider: 'github-copilot', status: 'missing' as const, authType: 'oauth' as const },
+      linear: { provider: 'linear', status: 'missing' as const, authType: 'api_key' as const },
     }
 
     const modelCheckpoint = normalizeFirstRunModelReadiness({
@@ -1333,6 +1334,7 @@ rl.on('line', (line) => {
       bedrock: { provider: 'bedrock', status: 'missing' as const, authType: 'api_key' as const },
       azure: { provider: 'azure', status: 'missing' as const, authType: 'api_key' as const },
       'github-copilot': { provider: 'github-copilot', status: 'missing' as const, authType: 'oauth' as const },
+      linear: { provider: 'linear', status: 'missing' as const, authType: 'api_key' as const },
     }
 
     const checkpoint = normalizeFirstRunModelReadiness({
@@ -1355,6 +1357,7 @@ rl.on('line', (line) => {
       bedrock: { provider: 'bedrock', status: 'missing' as const, authType: 'api_key' as const },
       azure: { provider: 'azure', status: 'missing' as const, authType: 'api_key' as const },
       'github-copilot': { provider: 'github-copilot', status: 'missing' as const, authType: 'oauth' as const },
+      linear: { provider: 'linear', status: 'missing' as const, authType: 'api_key' as const },
     }
 
     const checkpoint = normalizeFirstRunModelReadiness({
