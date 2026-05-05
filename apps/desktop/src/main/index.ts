@@ -122,7 +122,7 @@ function loadDevEnvironment(): void {
 if (!app.isPackaged) {
   loadDevEnvironment()
 }
-import { AuthBridge } from './auth-bridge'
+import { AuthBridge, PI_AUTH_PATH } from './auth-bridge'
 import log from './logger'
 import { evaluateExternalWindowRequest } from './external-window-policy'
 import { PiAgentBridge } from './pi-agent-bridge'
@@ -330,7 +330,7 @@ app.whenReady().then(async () => {
   symphonyOperatorService = new SymphonyOperatorService({ env: process.env })
   agentActivityJournal = new AgentActivityJournal()
 
-  const authBridge = new AuthBridge()
+  const authBridge = new AuthBridge(undefined, PI_AUTH_PATH)
   const sessionManager = new DesktopSessionManager()
   mainWindow = createWindow()
 

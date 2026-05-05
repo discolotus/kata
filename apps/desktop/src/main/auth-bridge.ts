@@ -24,6 +24,8 @@ const DEFAULT_AUTH_PATH =
   process.env.KATA_DESKTOP_AUTH_FILE_PATH?.trim() ||
   path.join(homedir(), '.kata-cli', 'agent', 'auth.json')
 
+export const PI_AUTH_PATH = path.join(homedir(), '.pi', 'agent', 'auth.json')
+
 interface ValidationConfig {
   url: (key: string) => string
   init: (key: string) => RequestInit
@@ -131,7 +133,10 @@ export function normalizeFirstRunAuthReadiness(input: {
 }
 
 export class AuthBridge {
-  constructor(private readonly authFilePath = DEFAULT_AUTH_PATH) {}
+  constructor(
+    private readonly authFilePath = DEFAULT_AUTH_PATH,
+    private readonly fallbackAuthFilePath: string | null = null,
+  ) {}
 
   public getAuthFilePath(): string {
     return this.authFilePath
@@ -386,6 +391,16 @@ export class AuthBridge {
   }
 
   private async readAuthFile(): Promise<AuthRecord> {
+    const primary = await this.readPrimaryAuthFile()
+    const fallback = this.fallbackAuthFilePath
+      ? await this.readFallbackAuthFile(this.fallbackAuthFilePath)
+      : {}
+
+    // Merge: primary wins; fallback fills in missing keys only
+    return { ...fallback, ...primary }
+  }
+
+  private async readPrimaryAuthFile(): Promise<AuthRecord> {
     try {
       const content = await fs.readFile(this.authFilePath, 'utf8')
       if (!content.trim()) {
@@ -404,6 +419,31 @@ export class AuthBridge {
       }
 
       throw error
+    }
+  }
+
+  private async readFallbackAuthFile(filePath: string): Promise<AuthRecord> {
+    try {
+      const content = await fs.readFile(filePath, 'utf8')
+      if (!content.trim()) {
+        return {}
+      }
+
+      const parsed = JSON.parse(content) as AuthRecord
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        log.warn('[auth-bridge] fallback auth file is not a JSON object, ignoring', { path: filePath })
+        return {}
+      }
+
+      return parsed
+    } catch (error) {
+      if (!this.isFileNotFoundError(error)) {
+        log.warn('[auth-bridge] failed to read fallback auth file, ignoring', {
+          path: filePath,
+          error: error instanceof Error ? error.message : String(error),
+        })
+      }
+      return {}
     }
   }
 
