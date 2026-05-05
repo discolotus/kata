@@ -33,6 +33,7 @@ const PROVIDER_ORDER: AuthProvider[] = [
   'bedrock',
   'azure',
   'github-copilot',
+  'linear',
 ]
 
 function statusVariant(status: ProviderInfo['status']): 'secondary' | 'destructive' | 'outline' {
